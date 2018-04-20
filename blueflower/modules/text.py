@@ -49,11 +49,13 @@ def text_do_text(text, afile):
                 loggedFilename = True
             log_secret(",%s,%s,%s" % (lineno, offset, wrd))
      
-            if len(lines) > lineno - 2 and 0 < lineno -2 :
+            if len(lines) > lineno - 2 and 0 <= lineno -2 :
                 log_text_and_line_number((lineno - 2), lines[lineno-2])
-            if len(lines) > lineno - 1 and 0 < lineno -1:
+            if len(lines) > lineno - 1 and 0 <= lineno -1:
                 log_text_and_line_number((lineno - 1), lines[lineno-1])
+
             log_text_and_line_number(lineno,lines[lineno])
+
             if len(lines) > lineno + 1:
                 log_text_and_line_number((lineno + 1), lines[lineno+1])
             if len(lines) > lineno + 2:
