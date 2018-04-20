@@ -220,23 +220,40 @@ def signal_handler(*_):
 def main():
     """main function"""
     parser = argparse.ArgumentParser(description='blueflower\
-        <https://github.com/veorq/blueflower>')
-    parser.add_argument('path', 
-        help='directory to explore')
-    parser.add_argument('-H', metavar='hashesfile', required=False,\
-        help='hashes file')
-    parser.add_argument('-p', metavar='password',\
-        help='hashes file password (optional, interactive prompt otherwise)')
-    parser.add_argument('-o', metavar='output_file',required=False,\
-        help='directory to save the log file')
-    parser.add_argument('-d', metavar='dictionaryfile', required=False,\
-        help='dictionary file')
+        <https://github.com/the-container-store/blueflower>')
+    parser.add_argument('path',
+                        help='directory to explore',
+                        action='store')
+    parser.add_argument('-H', 
+                        metavar='hashesfile', 
+                        required=False,
+                        help='hashes file',
+                        action='store')
+    parser.add_argument('-p', 
+                        metavar='password',
+                        help='hashes file password (optional, interactive prompt otherwise)',
+                        action='store')
+    parser.add_argument('-o', 
+                        metavar='output_file',
+                        required=False,
+                        help='directory to save the log file',
+                        action='store')
+    parser.add_argument('-d', 
+                        metavar='dictionaryfile', 
+                        required=False,
+                        help='dictionary file',
+                        action='store')
+    parser.add_argument('-exd',
+                        required=False,
+                        help='exclude default regex dictionary',
+                        action='store_true')
 
     args = parser.parse_args()
     path = args.path
     hashesfile = args.H  # = None if argument missing
     dictionaryfile = args.d # = None if argument missing
     output_file = args.o
+    exclude_default_dictionary = args.exd if args.exd else False
 
     if hashesfile:
         pwd = args.p  # = None if argument missing
@@ -248,7 +265,7 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
 
     try:
-        blueflower(path, hashesfile, dictionaryfile, pwd, output_file)
+        blueflower(path, hashesfile, dictionaryfile, pwd, output_file, exclude_default_dictionary)
     except BFException as e:
         print str(e)
         parser.print_usage()
@@ -257,7 +274,7 @@ def main():
     return 0
 
 
-def blueflower(path, hashesfile, dictionaryfile, pwd, output_file):
+def blueflower(path, hashesfile, dictionaryfile, pwd, output_file, exclude_default_dictionary):
     """runs blueflower, returns name of the log file"""
     global RGX_INFILE
     global RGX_INFILENAME
@@ -301,14 +318,20 @@ def blueflower(path, hashesfile, dictionaryfile, pwd, output_file):
             raise
 
     # read the dictionary and add to INFILE
-    if(dictionaryfile):
+    if dictionaryfile:
         extradictionary = load_dictionary_file(dictionaryfile)
     else:
         extradictionary=[]
 
-    # precompile the regexes
-    rgx_infile = '|'.join(set(INFILE) | set(extradictionary))
+    # configure the regex dictionary to be used
+    if exclude_default_dictionary:
+        rgx_infile = '|'.join(set(extradictionary))
+    else:
+        rgx_infile = '|'.join(set(INFILE) | set(extradictionary))
+
     log_comment(rgx_infile)
+
+    # precompile the regexes
     try:
         RGX_INFILE = re.compile(rgx_infile, re.IGNORECASE)
     except re.error:
