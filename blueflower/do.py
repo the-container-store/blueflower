@@ -17,7 +17,7 @@
 
 
 import blueflower.constants as constants
-
+from blueflower.utils.log import log_info
 
 def do_data(ftype, data, afile):
     if ftype == constants.BF_UNKNOWN:
@@ -50,6 +50,7 @@ def do_data(ftype, data, afile):
 
 def do_file(ftype, afile):
     if ftype == constants.BF_UNKNOWN:
+        log_info("Unknown File, not scanning: %s" % afile)
         return
     elif ftype == constants.BF_BZIP2:
         from blueflower.modules.bzip2 import bzip2_do_file

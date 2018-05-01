@@ -29,7 +29,7 @@ from blueflower.constants import ENCRYPTED, EXE, INFILE, INFILENAME, PROGRAM, SK
 from blueflower.do import do_file
 from blueflower.types import type_file
 from blueflower.utils.hashing import key_derivation, HASH_BYTES
-from blueflower.utils.log import log_comment, log_encrypted, log_error, \
+from blueflower.utils.log import log_comment, log_encrypted, log_error, log_info,\
     log_secret, log_exe, log_packed, timestamp
 from blueflower.utils.heuristics import looks_uniform
 
@@ -136,6 +136,7 @@ def scan(path, count):
     """selects files to process, checks file names"""
     log_comment('scanning %s:' % path)
     scanned = 0
+    not_scanned = 0
     bar_width = 32
     if count < bar_width:
         bar_width = count
@@ -176,6 +177,9 @@ def scan(path, count):
                     # process the file
                     do_file(ftype, abspath)
                     scanned += 1
+            else:
+                log_error("File Not supported, not scanning: %s" % abspath)
+                not_scanned += 1
 
             # update progress bar
             bar_count += 1
@@ -187,6 +191,7 @@ def scan(path, count):
 
     sys.stdout.write("\n")
     log_comment('%d files supported were processed' % scanned)
+    log_comment('%d files were not processed' % not_scanned)
     return scanned
 
 
@@ -322,6 +327,13 @@ def blueflower(path, hashesfile, dictionaryfile, pwd, output_file, exclude_defau
         extradictionary = load_dictionary_file(dictionaryfile)
     else:
         extradictionary=[]
+
+    for rex in extradictionary:
+        try:
+            re.compile(rex, re.IGNORECASE)
+        except re.error:
+            log_error('regex does not compile: %s' % rex)
+
 
     # configure the regex dictionary to be used
     if exclude_default_dictionary:

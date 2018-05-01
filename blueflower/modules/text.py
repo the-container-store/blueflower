@@ -38,16 +38,22 @@ def text_do_text(text, afile):
     lines = text.splitlines()
     for lineno in range(len(lines)):
         line = lines[lineno]
+
+        lineMatched=False
+        wordsMatched=""
+
         for match in re.finditer(RGX_INFILE, line):
             start = match.start()
             offset = start - text.rfind('\n', 0, start)
-            wrd = match.group(0)
+            lineMatched = True
+            wordsMatched = " ".join([wordsMatched, "%s @ %d" % (match.group(0), offset)]) 
 
+        if lineMatched:
             if not loggedFilename:
                 log_secret("")
                 log_secret("%s" % (afile))
                 loggedFilename = True
-            log_secret(",%s,%s,%s" % (lineno, offset, wrd))
+            log_secret(",%s, Matches:%s" % (lineno, wordsMatched))
      
             if len(lines) > lineno - 2 and 0 <= lineno -2 :
                 log_text_and_line_number((lineno - 2), lines[lineno-2])
@@ -61,7 +67,6 @@ def text_do_text(text, afile):
             if len(lines) > lineno + 2:
                 log_text_and_line_number((lineno + 2), lines[lineno+2])
 
-        #log_secret(match.group(), afile)
     if HASHES:
         search_hashes(text, afile)
 
@@ -69,7 +74,7 @@ def log_text_and_line_number(lineno, text):
     output = io.BytesIO()
     writer = csv.writer(output)
     writer.writerow([text])
-    log_secret(",,,,%s %s" % (lineno, output.getvalue().splitlines()[0]))
+    log_secret(",,,%s,%s" % (lineno, output.getvalue().splitlines()[0]))
 
 def text_do_data(data, afile):
     text = data.lower()
