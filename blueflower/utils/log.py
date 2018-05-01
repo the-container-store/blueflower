@@ -26,6 +26,7 @@ def log(message):
 
 def log_comment(comment):
     message = '%s' % (comment)
+    log(comment)
     print message
 
 
@@ -47,6 +48,10 @@ def log_entropy(ftype, filename=''):
 
 def log_error(error, filename=''):
     log('ERROR, %s, %s' % (error, filename))
+
+
+def log_info(info, filename=''):
+    log('INFO, %s, %s' % (info, filename))
 
 
 def log_secret(secret, filename=''):
